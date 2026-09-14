@@ -1,4 +1,4 @@
-# ⚡ Monitoramento ANEEL
+#  Monitoramento ANEEL (SETOR ELÉTRICO BRASILEIRO)
 
 ### Sistema automatizado de monitoramento das publicações regulatórias da ANEEL
 
