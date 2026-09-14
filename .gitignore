@@ -1,0 +1,10 @@
+.venv/
+
+__pycache__/
+*.pyc
+
+dados/debug/
+dados/historico.csv
+dados/novos.csv
+
+.vscode/
