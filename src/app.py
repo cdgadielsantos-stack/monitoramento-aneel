@@ -1,9 +1,13 @@
+import time
+
+inicio = time.time()
+
+from datetime import datetime
 from navegador import obter_html
 from consultas import buscar_consultas
 from audiencias import buscar_audiencias
 from tomadas import buscar_tomadas
 from comparador import detectar_novidades
-from datetime import datetime
 from bs4 import BeautifulSoup
 
 
@@ -64,6 +68,63 @@ def executar_monitoramento():
         registros
     )
 
+    fim = time.time()
+        
+    tempo_execucao = round(
+        fim - inicio,
+        2
+    )
+
+    with open(
+        "logs/monitor.log",
+        "a",
+        encoding="utf-8"
+    ) as log:
+
+        log.write("\n" + "=" * 50 + "\n")
+
+        log.write(
+            f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n"
+        )
+
+        log.write(
+            f"AP encontradas: {len(audiencias)}\n"
+        )
+
+        log.write(
+            f"CP encontradas: {len(consultas)}\n"
+        )
+
+        log.write(
+            f"TS encontradas: {len(tomadas)}\n"
+        )
+
+        log.write(
+            f"Total registros: {len(registros)}\n"
+        )
+
+        log.write(
+            f"Novidades: {len(novidades)}\n"
+        )
+
+        log.write(
+            "Status: SUCESSO\n"
+        )
+
+        log.write("\n" + "=" * 50 + "\n")
+
+        log.write(
+            f"Tempo de execução: {tempo_execucao}s\n"
+        )
+
+        log.write(
+            "Fontes monitoradas:\n"
+        )
+
+        log.write(
+            "AP, CP e TS da ANEEL\n"
+        )
+
     if novidades:
 
         print(
@@ -81,5 +142,4 @@ def executar_monitoramento():
 
 
 if __name__ == "__main__":
-    executar_monitoramento()
-
+     executar_monitoramento()
