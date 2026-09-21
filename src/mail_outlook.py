@@ -1,6 +1,8 @@
 import win32com.client
+
 from datetime import datetime
 from html import escape
+from pathlib import Path
 
 
 def enviar_email_novidades(novidades):
@@ -13,260 +15,223 @@ def enviar_email_novidades(novidades):
 
     email.BodyFormat = 2
 
+    # ======================================
+    # BANNER
+    # ======================================
+
+    banner_path = (
+        Path(__file__).resolve().parent.parent
+        / "assets"
+        / "banner_monitor.png"
+    )
+
+    banner = email.Attachments.Add(
+        str(banner_path)
+    )
+
+    banner.PropertyAccessor.SetProperty(
+        "http://schemas.microsoft.com/mapi/proptag/0x3712001F",
+        "banner_monitor"
+    )
+
+    # ======================================
+    # DESTINATÁRIO
+    # ======================================
+
     email.To = "gadiel.caminos@light.com.br"
 
     quantidade = len(novidades)
 
-    if quantidade == 1:
-        assunto = (
-            "🚨 Monitor ANEEL | 1 nova publicação identificada"
-        )
-    else:
-        assunto = (
-            f"🚨 Monitor ANEEL | {quantidade} novas publicações identificadas"
-        )
-
-    email.Subject = assunto
-
-    data_deteccao = datetime.now().strftime(
-        "%d/%m/%Y %H:%M:%S"
+    email.Subject = (
+        f"🚨 Monitor ANEEL | {quantidade} nova(s) publicação(ões)"
     )
 
     html = f"""
 <!DOCTYPE html>
-<html>
 
-<head>
-<meta charset="UTF-8">
-<title>Monitor ANEEL</title>
-</head>
+<html>
 
 <body style="
     margin:0;
-    padding:30px;
-    background-color:#F2F2F2;
-    font-family:'Segoe UI', Arial, sans-serif;
+    padding:0;
+    background:#D9FF15;
+    font-family:Segoe UI, Arial, sans-serif;
 ">
 
-<table width="100%" cellpadding="0" cellspacing="0">
+<table
+width="100%"
+cellpadding="0"
+cellspacing="0"
+style="
+    background:#D9FF15;
+">
+
 <tr>
 <td align="center">
 
-<table width="800"
-       cellpadding="0"
-       cellspacing="0"
-       style="
-            background:white;
-            border-radius:12px;
-            overflow:hidden;
-       ">
+<table
+width="900"
+cellpadding="0"
+cellspacing="0">
 
 <tr>
-<td style="
-    background-color:#F58220;
-    color:white;
-    padding:20px 25px;
-">
+<td>
 
-<h1 style="
-    margin:0;
-    font-size:32px;
-">
-⚡ Monitor Regulatório ANEEL
-</h1>
-
-<p style="
-    margin-top:8px;
-    font-size:15px;
-">
-Monitoramento automatizado de Audiências Públicas,
-Consultas Públicas e Tomadas de Subsídios.
-</p>
+cid:banner_monitor
 
 </td>
 </tr>
 
 <tr>
-<td style="padding:25px;">
+<td
+style="
+    padding-top:25px;
+">
 
-<p style="font-size:16px;">
+<table
+width="100%"
+cellpadding="0"
+cellspacing="0"
+style="
+    background:#F4F4F4;
+    border-radius:28px;
+">
 
-Prezados,
-
-<br><br>
-
-O Monitor Regulatório ANEEL identificou
-<strong>{quantidade}</strong>
-{"nova publicação" if quantidade == 1 else "novas publicações"}.
-
-<br><br>
-
-Recomenda-se avaliar a pertinência do tema para sua área
-e, quando aplicável, a participação no respectivo
-processo regulatório.
-
-</p>
-
-<p>
-
-<strong>
-Data da detecção:
-</strong>
-
-{data_deteccao}
-
-</p>
-
-<hr>
+<tr>
+<td
+style="
+    padding:40px;
+">
 """
 
     for item in novidades:
 
         tipo = escape(
-            str(item.get("tipo", ""))
+            str(item["tipo"])
         )
 
         numero = escape(
-            str(item.get("numero", ""))
+            str(item["numero"])
         )
 
         objeto = escape(
-            str(item.get("objeto", ""))
+            str(item["objeto"])
         )
 
-        link_original = str(
-            item.get("link", "")
-        ).strip()
-
         link = escape(
-            link_original,
+            str(item["link"]),
             quote=True
         )
 
-        cor = "#0078D4"
+        titulo = tipo
 
-        if tipo == "AP":
-            cor = "#28A745"
+        if tipo == "CP":
+            titulo = "CONSULTA PÚBLICA"
 
-        elif tipo == "CP":
-            cor = "#F2C811"
+        elif tipo == "AP":
+            titulo = "AUDIÊNCIA PÚBLICA"
 
         elif tipo == "TS":
-            cor = "#0078D4"
+            titulo = "TOMADA DE SUBSÍDIOS"
 
         html += f"""
-<table width="100%"
-       cellpadding="0"
-       cellspacing="0"
-       style="
-            border:1px solid #D9D9D9;
-            border-radius:12px;
-            margin-top:20px;
-       ">
+<h1 style="
+    margin:0;
+    color:#103B35;
+    font-size:64px;
+    line-height:1;
+    font-weight:800;
+">
 
-<tr>
-<td style="
-    background:{cor};
-    color:white;
-    padding:14px;
-    font-size:18px;
-    font-weight:bold;
+NOVA {titulo}
+IDENTIFICADA!
+
+</h1>
+
+<h2 style="
+    margin-top:20px;
+    color:#103B35;
+    font-size:58px;
+    line-height:1;
+    font-weight:800;
 ">
 
 {tipo} | {numero}
 
-</td>
-</tr>
-
-<tr>
-<td style="
-    padding:20px;
-">
+</h2>
 
 <p style="
-    margin-top:0;
-    font-weight:bold;
-">
-Objeto
-</p>
-
-<div style="
-    background:#FFF8E8;
-    border-left:5px solid #F58220;
-    padding:15px;
-    line-height:1.6;
+    margin-top:30px;
+    color:#103B35;
+    font-size:22px;
+    line-height:1.5;
+    font-weight:600;
 ">
 
 {objeto}
 
-</div>
+</p>
 
 <br>
 
-{link}
-
-🔗 Abrir Publicação
-
-</a>
-
 <p style="
-    margin-top:20px;
+    font-size:22px;
 ">
 
-<strong>
-Link direto:
-</strong>
-
-<br><br>
-
 {link}
-
-{link}
-
+CLIQUE AQUI
 </a>
 
+e confira.
+
 </p>
-
-</td>
-</tr>
-
-</table>
 """
 
-    html += """
-<br>
-
-<hr>
-
-<p style="
-    color:#777777;
-    font-size:12px;
-">
-
-Mensagem gerada automaticamente pelo
-<strong>Monitor Regulatório ANEEL</strong>.
-
-</p>
-
-<p style="
-    color:#777777;
-    font-size:12px;
-">
-
-Objetivo:
-ampliar a disseminação interna de informações
-regulatórias e apoiar a participação em
-Audiências Públicas, Consultas Públicas e
-Tomadas de Subsídios.
-
-</p>
+    html += f"""
 
 </td>
 </tr>
+
 </table>
 
 </td>
 </tr>
+
+<tr>
+<td
+style="
+    padding-top:25px;
+    padding-bottom:30px;
+">
+
+<p style="
+    color:#103B35;
+    font-size:14px;
+    font-weight:600;
+">
+
+Monitor Regulatório ANEEL
+
+</p>
+
+<p style="
+    color:#103B35;
+    font-size:12px;
+">
+
+Mensagem automática gerada em
+{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+
+</p>
+
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+
 </table>
 
 </body>
@@ -277,7 +242,6 @@ Tomadas de Subsídios.
 
     email.Display()
 
-    # Quando estiver validado:
     # email.Send()
 
 
@@ -288,9 +252,10 @@ if __name__ == "__main__":
             "tipo": "CP",
             "numero": "Consulta 027/2026",
             "objeto": (
-                "Obter subsídios para aprimorar "
-                "a proposta referente à "
-                "Revisão Tarifária Periódica de 2026."
+                "Obter subsídios para aprimorar a proposta "
+                "referente à Revisão Tarifária Periódica "
+                "de 2026 da Companhia Estadual de "
+                "Distribuição de Energia Elétrica."
             ),
             "link": "https://www.aneel.gov.br"
         }
